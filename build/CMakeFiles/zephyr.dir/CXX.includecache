@@ -1,0 +1,20 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/pk/Developer/Zephyr/src/main.cxx
+iostream
+-
+map
+-
+vector
+-
+string
+-
+sstream
+-
+
