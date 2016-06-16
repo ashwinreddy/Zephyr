@@ -3,5 +3,5 @@ project(zephyr)
 set(SOURCES src/main.cxx)
 add_executable(zephyr ${SOURCES})
 ADD_DEFINITIONS(
-    -std=c++11
+    -std=c++14
 )

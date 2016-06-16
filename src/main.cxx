@@ -1,7 +1,9 @@
 #include <iostream>
 #include <map>
 #include <vector>
+#include <cassert>
 #include <string>
+#include <stack>
 #include <sstream>
 using namespace std;
 
@@ -13,25 +15,23 @@ bool isFloat(string test) {
 }
 
 class Zephyr;
-
-class Function {
-public:
-    void run(Zephyr* const z) {
-
-    }
-};
+typedef map<string, void(*)(Zephyr* const)> function_map;
 
 class Module {
 private:
-    map<string, Function> defs;
+    function_map defs;
 public:
     Module() {
-        defs = map<string, Function>();
+        defs = function_map();
     }
-};
 
-class IO : public Module {
+    void setFunction(string s, void(*f)(Zephyr* const)) {
+        defs[s] = f;
+    }
 
+    function_map getDefs() {
+        return defs;
+    }
 };
 
 class Lexer {
@@ -59,24 +59,41 @@ public:
     }
 };
 
-union StackObj {
-    float f;
-    double d;
+struct StackObj {
+    union {
+        float f_;
+    };
+    enum {F_ACTIVE = 1} tag;
+
+    StackObj(float f) {
+        tag = F_ACTIVE;
+        f_ = f;
+    }
+
+    float getFloat() {
+        return f_;
+    }
+
+    int type() {
+        return tag;
+    }
 };
 
 
 
 class Zephyr {
 private:
-    map<string, Function> dictionary;
-    vector<StackObj> stack;
+    function_map dictionary;
+    stack<StackObj> stack_;
 public:
     Zephyr() {
-        dictionary = map<string, Function>();
+        dictionary = function_map();
     }
 
     void addModule(Module m) {
-
+        for (auto const& x: m.getDefs()) {
+            dictionary[x.first] = x.second;
+        }
     }
 
     void run(string source_code) {
@@ -87,24 +104,63 @@ public:
         while(lex.nextWordExists()) {
             word = lex.nextWord();
             if(dictionary.find(word) != dictionary.end()) {
-                dictionary[word].run(this);
+                dictionary[word](this);
             } else if (isFloat(word)) {
-                StackObj x;
-                x.d = stod(word);
-                stack.push_back(x);
+                StackObj x(stod(word));
+                stack_.push(x);
             } else if (word != "") {
                 cerr << "Unknown word" << endl;
             }
         }
     }
 
-    vector<StackObj> getStack() {
-        return stack;
+    stack<StackObj> getStack() {
+        return stack_;
+    }
+
+    int size() {
+        return stack_.size();
+    }
+
+    StackObj pop() {
+        auto t = stack_.top();
+        stack_.pop();
+        return t;
     }
 };
 
+void print_stack_element(StackObj so) {
+    if (so.type() == 1) {
+        cout << so.getFloat() << endl;
+    }
+}
+
+
+void print(Zephyr* const z) {
+    if (z->size() < 1) {
+        throw "Not enough items on stack";
+    }
+    auto t = z->pop();
+    if(t.type() == 1) {
+        print_stack_element(t);
+    }
+}
+
+void print_stack(Zephyr* const z) {
+    auto st = z->getStack();
+    do {
+        print_stack_element(st.top());
+        st.pop();
+    } while (!st.empty());
+}
+
+
+
 int main(int argc, const char * argv[]) {
     auto terp = Zephyr();
-    terp.run("1 2 3 45 678");
-    auto stack = terp.getStack();
+    auto stdio = Module();
+    stdio.setFunction("print", print);
+    stdio.setFunction("pstack", print_stack);
+    terp.addModule(stdio);
+    terp.run("1 2 3 print print print");
 }

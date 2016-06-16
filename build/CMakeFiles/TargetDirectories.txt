@@ -1,1 +1,0 @@
-/home/pk/Developer/Zephyr/build/CMakeFiles/zephyr.dir
