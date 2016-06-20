@@ -1,11 +1,16 @@
 #include "main.hpp"
 #include "Zephyr.cxx"
-#include "IO.cxx"
+#include "stdlib.cxx"
 
 int main(int argc, const char * argv[]) {
     auto terp = Zephyr();
-    auto stdio = Module();
-    stdio.setFunction("print", print);
-    stdio.setFunction("pstack", print_stack);
-    terp.addModule(stdio)->run("1 2 3 print print print");
+    auto stdlib = Module();
+    stdlib.setFunction("print", print);
+    stdlib.setFunction("pstack", print_stack);
+    terp.addModule(stdlib);
+    while(true) {
+        string inp;
+        cin >> inp;
+        terp.run(inp);
+    }
 }

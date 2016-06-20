@@ -36,17 +36,20 @@ struct StackObj {
         float f_;
     };
     enum {F_ACTIVE = 1} tag;
-    StackObj(float f);
+    StackObj(float f); 
     float getFloat();
     int type();
 };
 
 class Zephyr {
-private:
+public:
     function_map dictionary;
     stack<StackObj> stack_;
 public:
+    Lexer lex = Lexer("");
+public:
     Zephyr();
+    void define(string word, void(*f)(Zephyr* const));
     Zephyr* addModule(Module m);
     void run(string source_code);
     stack<StackObj> getStack();

@@ -53,15 +53,19 @@ Zephyr::Zephyr() {
     dictionary = function_map();
 }
 
+void Zephyr::define(string word, void(*f)(Zephyr* const)) {
+    dictionary[word] = f;
+}
+
 Zephyr* Zephyr::addModule(Module m) {
     for (auto const& x: m.getDefs()) {
-        dictionary[x.first] = x.second;
+        define(x.first, x.second);
     }
     return this;
 }
 
 void Zephyr::run(string source_code) {
-    Lexer lex = Lexer(source_code);
+    lex = Lexer(source_code);
     string word;
     float num_val;
 
